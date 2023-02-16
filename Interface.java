@@ -1,14 +1,21 @@
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.sql.Time;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import static java.util.Calendar.FEBRUARY;
+import static java.util.Calendar.FRIDAY;
 
 
 public class Interface extends JFrame implements ActionListener {
@@ -17,7 +24,11 @@ public class Interface extends JFrame implements ActionListener {
     JButton timerButton;
     JButton confirmAlarm;
     JTextField textField;
-    String AlarmTime;
+    JTextField textFieldtwo;
+    JTextField textFieldthree;
+    String AlarmTimeHH;
+    String AlarmTimeMM;
+    String AlarmTimeSS;
 
 
     String Time;
@@ -27,7 +38,10 @@ public class Interface extends JFrame implements ActionListener {
     JPanel AlarmPanel;
     JPanel AlarmPanelTwo;
     JPanel AlarmPanelThree;
+    Calendar cal;
     Calendar calendar;
+    Calendar date;
+
     SimpleDateFormat timeFormat;
 
     Interface() {
@@ -69,7 +83,7 @@ public class Interface extends JFrame implements ActionListener {
         confirmAlarm.addActionListener(this);
 
         MainFrame.setVisible(true);
-        timeFormat = new SimpleDateFormat("hh:mm:ss aa");
+        timeFormat = new SimpleDateFormat("hh:mm:ss");
         TimeLabel = new JLabel();
         TimeLabel.setFont(new Font("Helvetica", Font.BOLD, 30));
         TimeLabel.setForeground(new Color(0xFFFFFF));
@@ -106,10 +120,16 @@ public class Interface extends JFrame implements ActionListener {
             AlarmPanelTwo.setBackground(Color.black);
             AlarmPanelTwo.add(confirmAlarm);
             textField = new JTextField();
-            textField.setPreferredSize(new Dimension(100, 25));
+            textField.setPreferredSize(new Dimension(25, 25));
+            textFieldtwo = new JTextField();
+            textFieldtwo.setPreferredSize(new Dimension(25, 25));
+            textFieldthree = new JTextField();
+            textFieldthree.setPreferredSize(new Dimension(25, 25));
 
 
             AlarmPanelTwo.add(textField);
+            AlarmPanelTwo.add(textFieldtwo);
+            AlarmPanelTwo.add(textFieldthree);
 
 
             AlarmPanel.add(TimeLabel);
@@ -123,7 +143,6 @@ public class Interface extends JFrame implements ActionListener {
             AlarmFrame.add(AlarmPanelThree);
             AlarmFrame.setVisible(true);
 
-
         }
         if (e.getSource() == timerButton) {
             System.out.println("that");
@@ -131,37 +150,61 @@ public class Interface extends JFrame implements ActionListener {
 
         }
         if (e.getSource() == confirmAlarm) {
-            AddClockAlarm();
+            try {
+
+                AddClockAlarm();
+                timeMethod();
+
+            } catch (ParseException ex) {
+                ex.printStackTrace();
+            }
             AlarmPanelThree.add(AlarmClockLabel);
 
 
         }
 
     }
-    public void timeMethod(){
+    public void timeMethod() throws ParseException {
 
         Timer timer = new Timer();
         TimerTask task = new TimerTask() {
             @Override
             public void run() {
-
+                System.out.println("Task is complete");
+                try {
+                    Audio.Sound();
+                } catch (UnsupportedAudioFileException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (LineUnavailableException e) {
+                    e.printStackTrace();
+                }
             }
         };
+         date = Calendar.getInstance();
+
+         date.set(Calendar.HOUR_OF_DAY,Integer.parseInt(AlarmTimeHH));
+         date.set(Calendar.MINUTE,Integer.parseInt(AlarmTimeMM));
+        date.set(Calendar.SECOND, Integer.parseInt(AlarmTimeSS));
+
+            timer.schedule(task, date.getTime());
 
     }
 
 
-    public void AddClockAlarm() {
+    public void AddClockAlarm() throws ParseException {
 
-        AlarmTime = textField.getText();
-        System.out.println(AlarmTime);
+        AlarmTimeHH = textField.getText();
+        AlarmTimeMM = textFieldtwo.getText();
+        AlarmTimeSS = textFieldthree.getText();
         //  System.out.println(Time);
         //  System.out.println("confirmAlarm");
 
         AlarmClockLabel = new JLabel();
         ImageIcon image = new ImageIcon("C:\\Users\\Luis\\Downloads\\clockanimation.jpg");
         AlarmClockLabel.setIcon(image);
-        AlarmClockLabel.setText(AlarmTime);
+        AlarmClockLabel.setText(AlarmTimeHH);
         AlarmClockLabel.setHorizontalTextPosition(JLabel.CENTER);
         AlarmClockLabel.setVerticalTextPosition(JLabel.TOP);
         AlarmClockLabel.setForeground(Color.white);
@@ -177,7 +220,7 @@ public class Interface extends JFrame implements ActionListener {
             Time = timeFormat.format(calendar.getInstance().getTime());
             TimeLabel.setText(Time);
 
-            if (AlarmTime == Time) {
+            if (AlarmTimeHH == Time) {
                 System.out.println("RING");
             }
 
